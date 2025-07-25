@@ -26,7 +26,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -84,11 +85,40 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'ship-sail': {
+					'0%': { transform: 'translateX(0) translateY(0)' },
+					'25%': { transform: 'translateX(25%) translateY(-2px)' },
+					'50%': { transform: 'translateX(50%) translateY(0)' },
+					'75%': { transform: 'translateX(75%) translateY(-1px)' },
+					'100%': { transform: 'translateX(100%) translateY(0)' }
+				},
+				'wave': {
+					'0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+					'50%': { transform: 'translateY(-4px) rotate(2deg)' }
+				},
+				'money-float': {
+					'0%': { transform: 'translateY(0) scale(1)' },
+					'50%': { transform: 'translateY(-8px) scale(1.1)' },
+					'100%': { transform: 'translateY(0) scale(1)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'ship-sail': 'ship-sail 8s ease-in-out infinite',
+				'wave': 'wave 3s ease-in-out infinite',
+				'money-float': 'money-float 2s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'gradient-ocean': 'var(--gradient-ocean)',
+				'gradient-harbor': 'var(--gradient-harbor)',
+				'gradient-ship': 'var(--gradient-ship)'
+			},
+			boxShadow: {
+				'ship': 'var(--shadow-ship)',
+				'harbor': 'var(--shadow-harbor)',
+				'money': 'var(--glow-money)'
 			}
 		}
 	},
