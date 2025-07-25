@@ -1,24 +1,35 @@
 import { useGameState } from '@/hooks/useGameState';
 import { GameMap } from '@/components/GameMap';
 import { GameUI } from '@/components/GameUI';
-import { ShipShop } from '@/components/ShipShop';
+import { ShipShopDialog } from '@/components/ShipShopDialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const Game = () => {
   const { gameState, buyShip, selectShip, startRoute, resetRoute } = useGameState();
   const { toast } = useToast();
+  const [shipShopOpen, setShipShopOpen] = useState(false);
 
   // Show notifications for game events
   useEffect(() => {
     if (gameState.currentRoute?.progress === 100 && !gameState.currentRoute.traveling) {
-      const profit = gameState.activeShip?.profitPerTrip || 0;
+      const route = gameState.currentRoute;
+      let profit = 0;
+      let distance = 0;
+      
+      if (route && gameState.activeShip) {
+        const dx = route.to.x - route.from.x;
+        const dy = route.to.y - route.from.y;
+        distance = Math.sqrt(dx * dx + dy * dy) * 10;
+        profit = Math.round(distance * gameState.activeShip.profitPerNM);
+      }
+      
       toast({
         title: "🚢 Trip Completed!",
-        description: `Earned ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(profit)}`,
+        description: `Earned ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(profit)} for ${Math.round(distance)} NM`,
       });
     }
-  }, [gameState.currentRoute?.progress, gameState.currentRoute?.traveling, gameState.activeShip?.profitPerTrip, toast]);
+  }, [gameState.currentRoute?.progress, gameState.currentRoute?.traveling, gameState.activeShip, toast]);
 
   const handleBuyShip = (shipId: string) => {
     const ship = gameState.ships.find(s => s.id === shipId);
@@ -47,21 +58,12 @@ const Game = () => {
         {/* Main Game Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Game Map - Takes up 2 columns */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2">
             <GameMap
               harbors={gameState.harbors}
               activeShip={gameState.activeShip}
               routeProgress={gameState.currentRoute?.progress || 0}
               traveling={gameState.currentRoute?.traveling || false}
-            />
-            
-            {/* Ship Shop */}
-            <ShipShop
-              ships={gameState.ships}
-              money={gameState.money}
-              activeShip={gameState.activeShip}
-              onBuyShip={handleBuyShip}
-              onSelectShip={selectShip}
             />
           </div>
 
@@ -70,12 +72,26 @@ const Game = () => {
             <GameUI
               money={gameState.money}
               activeShip={gameState.activeShip}
+              harbors={gameState.harbors}
               traveling={gameState.currentRoute?.traveling || false}
+              currentRoute={gameState.currentRoute}
               onStartRoute={startRoute}
               onResetRoute={resetRoute}
+              onOpenShipShop={() => setShipShopOpen(true)}
             />
           </div>
         </div>
+
+        {/* Ship Shop Dialog */}
+        <ShipShopDialog
+          ships={gameState.ships}
+          money={gameState.money}
+          activeShip={gameState.activeShip}
+          onBuyShip={handleBuyShip}
+          onSelectShip={selectShip}
+          open={shipShopOpen}
+          onOpenChange={setShipShopOpen}
+        />
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-muted-foreground">

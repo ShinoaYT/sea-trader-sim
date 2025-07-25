@@ -22,10 +22,20 @@ export const useGameState = () => {
           const newProgress = prev.currentRoute.progress + 1;
           
           if (newProgress >= 100) {
-            // Trip completed
+            // Trip completed - calculate profit based on distance and ship profitPerNM
+            const route = prev.currentRoute;
+            let profit = 0;
+            
+            if (route && prev.activeShip) {
+              const dx = route.to.x - route.from.x;
+              const dy = route.to.y - route.from.y;
+              const distance = Math.sqrt(dx * dx + dy * dy) * 10; // Scale to nautical miles
+              profit = Math.round(distance * prev.activeShip.profitPerNM);
+            }
+            
             return {
               ...prev,
-              money: prev.money + (prev.activeShip?.profitPerTrip || 0),
+              money: prev.money + profit,
               currentRoute: {
                 ...prev.currentRoute,
                 progress: 100,
@@ -70,19 +80,24 @@ export const useGameState = () => {
     }
   }, []);
 
-  const startRoute = useCallback(() => {
+  const startRoute = useCallback((fromId: string, toId: string) => {
     if (!gameState.activeShip || gameState.currentRoute?.traveling) return;
+
+    const fromHarbor = gameState.harbors.find(h => h.id === fromId);
+    const toHarbor = gameState.harbors.find(h => h.id === toId);
+    
+    if (!fromHarbor || !toHarbor) return;
 
     setGameState(prev => ({
       ...prev,
       currentRoute: {
-        from: prev.harbors[0],
-        to: prev.harbors[1],
+        from: fromHarbor,
+        to: toHarbor,
         progress: 0,
         traveling: true
       }
     }));
-  }, [gameState.activeShip, gameState.currentRoute?.traveling]);
+  }, [gameState.activeShip, gameState.currentRoute?.traveling, gameState.harbors]);
 
   const resetRoute = useCallback(() => {
     setGameState(prev => ({
